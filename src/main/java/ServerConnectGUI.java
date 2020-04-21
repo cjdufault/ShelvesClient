@@ -1,4 +1,5 @@
 import javax.swing.*;
+import java.awt.*;
 
 public class ServerConnectGUI extends JFrame {
 
@@ -7,33 +8,34 @@ public class ServerConnectGUI extends JFrame {
     private JPanel serverConnectPanel;
     private JLabel statusLabel;
 
+    private Client client;
     private ServerRequests requests;
 
-    ServerConnectGUI(ServerRequests requests){
-        this.requests = requests;
+    ServerConnectGUI(Client client){
+        this.client = client;
+        this.requests = new ServerRequests();
 
         setContentPane(serverConnectPanel);
         setTitle("Connect to a Server");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setPreferredSize(new Dimension(400, 100));
         pack();
         setLocationRelativeTo(null);
         setAlwaysOnTop(true);
         setVisible(true);
 
-        connectButton.addActionListener(actionEvent -> {
-            testConnection();
-        });
+        connectButton.addActionListener(actionEvent -> testConnection());
+        serverURLTextField.addActionListener(actionEvent -> testConnection());
     }
 
     private void testConnection(){
         String serverURL = serverURLTextField.getText();
 
         if (!serverURL.strip().equals("")) {
-            statusLabel.setText("...");
             boolean successfulConnection = requests.testConnection(serverURL);
 
             if (successfulConnection){
-                requests.setServerURL(serverURL);
+                client.openMainGUI(requests);
                 dispose();
             }
             else {
