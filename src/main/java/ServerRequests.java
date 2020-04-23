@@ -2,11 +2,13 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.Socket;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -25,9 +27,27 @@ public class ServerRequests {
     private String serverURL;
 
     public boolean testConnection(String url){
-        serverURL = url;
+        if (url.startsWith("https://")){
+            serverURL = url.replace("https://", "http://");
+        }
+        else if (!url.startsWith("http://")){
+            serverURL = "http://" + url;
+        }
+        else {
+            serverURL = url;
+        }
+
         JSONObject jsonResponse = getRequest(TEST_CONNECTION_QUERY);
-        return jsonResponse != null && (int) jsonResponse.get("status_code") == 0;
+        try {
+            if (jsonResponse != null) {
+                long statusCode = (long) jsonResponse.get("status_code");
+                return statusCode == 0;
+            }
+            return false;
+        }
+        catch (NullPointerException e){
+            return false;
+        }
     }
 
     public Task getTask(int ID){
@@ -56,14 +76,11 @@ public class ServerRequests {
     private JSONObject getRequest(String queryString){
         try {
             URL requestURL = new URL(serverURL + queryString);
-            HttpsURLConnection connection = (HttpsURLConnection) requestURL.openConnection();
+            HttpURLConnection connection = (HttpURLConnection) requestURL.openConnection();
 
             // setup connection
-            connection.setRequestMethod("GET");
-            connection.setDoOutput(true);
             connection.setReadTimeout(15000);
-
-
+            connection.setRequestMethod("GET");
             connection.connect();
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -80,6 +97,7 @@ public class ServerRequests {
             JSONParser parser = new JSONParser();
             Object obj = parser.parse(response);
 
+            connection.disconnect();
             return (JSONObject) obj;
         }
         catch (ParseException | IOException e){

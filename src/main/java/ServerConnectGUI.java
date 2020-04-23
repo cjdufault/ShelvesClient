@@ -29,6 +29,7 @@ public class ServerConnectGUI extends JFrame {
     }
 
     private void testConnection(){
+        statusLabel.setText("Testing connection...");
         String serverURL = serverURLTextField.getText();
 
         if (!serverURL.strip().equals("")) {
