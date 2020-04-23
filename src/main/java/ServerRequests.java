@@ -5,10 +5,9 @@ import org.json.simple.parser.ParseException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.Socket;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -23,8 +22,20 @@ public class ServerRequests {
     private static final String SEARCH_QUERY = "/search/";
     private static final String GET_DEPENDENCIES_QUERY = "/get_dependencies/";
     private static final String GET_DEPENDENTS_QUERY = "/get_dependents/";
+    private static final String REMOVE_TASK_QUERY = "/remove_task/";
+    private static final String COMPLETE_TASK_QUERY = "/complete_task/";
+    private static final String ADD_TASK_UPDATE = "/add_task";
+    private static final String ADD_DEPENDENCY_UPDATE = "/add_dependency";
+    private static final String REMOVE_DEPENDENCY_UPDATE = "/remove_dependency";
+    private static final String CLAIM_UPDATE = "/update_claim";
 
     private String serverURL;
+
+    public String getServerURL(){
+        return serverURL;
+    }
+
+    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~GET METHODS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
 
     public boolean testConnection(String url){
         if (url.startsWith("https://")){
@@ -46,8 +57,24 @@ public class ServerRequests {
             return false;
         }
         catch (NullPointerException e){
-            return false;
+            e.printStackTrace();
         }
+        return false;
+    }
+
+    public List<Task> getAllTasks(){
+        JSONObject jsonResponse = getRequest(GET_ALL_TASKS_QUERY);
+        return convertJSONResponseToTaskList(jsonResponse);
+    }
+
+    public List<Task> getCompleteTasks(){
+        JSONObject jsonResponse = getRequest(GET_COMPLETE_TASKS_QUERY);
+        return convertJSONResponseToTaskList(jsonResponse);
+    }
+
+    public List<Task> getIncompleteTasks(){
+        JSONObject jsonResponse = getRequest(GET_INCOMPLETE_TASKS_QUERY);
+        return convertJSONResponseToTaskList(jsonResponse);
     }
 
     public Task getTask(int ID){
@@ -62,16 +89,36 @@ public class ServerRequests {
 
     public List<Task> search(String searchString){
         JSONObject jsonResponse = getRequest(SEARCH_QUERY + searchString);
-        List<Task> results = new ArrayList<>();
-
-        if (jsonResponse != null) {
-            JSONArray taskJsons = (JSONArray) jsonResponse.get("results");
-            for (Object taskJson : taskJsons){
-                results.add(parseTaskJSON((JSONObject) taskJson));
-            }
-        }
-        return results;
+        return convertJSONResponseToTaskList(jsonResponse);
     }
+
+    public List<Task> getDependencies(int ID){
+        JSONObject jsonResponse = getRequest(GET_DEPENDENCIES_QUERY + ID);
+        return convertJSONResponseToTaskList(jsonResponse);
+    }
+
+    public List<Task> getDependents(int ID){
+        JSONObject jsonResponse = getRequest(GET_DEPENDENTS_QUERY + ID);
+        return convertJSONResponseToTaskList(jsonResponse);
+    }
+
+    public boolean removeTask(int ID){
+        JSONObject jsonResponse = getRequest(REMOVE_TASK_QUERY + ID);
+        return checkStatusCode(jsonResponse);
+    }
+
+    public boolean completeTask(int ID){
+        JSONObject jsonResponse = getRequest(COMPLETE_TASK_QUERY + ID);
+        return checkStatusCode(jsonResponse);
+    }
+
+    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~POST METHODS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+
+    public boolean addTask(){
+        return false;
+    }
+
+    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~HELPER METHODS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
 
     private JSONObject getRequest(String queryString){
         try {
@@ -83,27 +130,66 @@ public class ServerRequests {
             connection.setRequestMethod("GET");
             connection.connect();
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            StringBuilder responseBuilder = new StringBuilder();
-
-            // read response from server
-            String line;
-            while ((line = reader.readLine()) != null){
-                responseBuilder.append(line);
-            }
-            String response = responseBuilder.toString();
-
-            // parse response
-            JSONParser parser = new JSONParser();
-            Object obj = parser.parse(response);
-
-            connection.disconnect();
-            return (JSONObject) obj;
+            return readInputStreamFromHTTPConnection(connection);
         }
         catch (ParseException | IOException e){
             e.printStackTrace();
         }
         return null;
+    }
+
+    private JSONObject postRequest(String updateString, String requestBody){
+        try{
+            URL updateURL = new URL(serverURL + updateString);
+            HttpURLConnection connection = (HttpURLConnection) updateURL.openConnection();
+
+            // setup connection
+            connection.setReadTimeout(15000);
+            connection.setRequestMethod("POST");
+            connection.connect();
+
+            // send request body to the server
+            OutputStream out = connection.getOutputStream();
+            out.write(requestBody.getBytes());
+
+            out.close();
+            return readInputStreamFromHTTPConnection(connection);
+        }
+        catch (ParseException | IOException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private JSONObject readInputStreamFromHTTPConnection(HttpURLConnection connection) throws IOException, ParseException{
+        BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        StringBuilder responseBuilder = new StringBuilder();
+
+        // read response from server
+        String line;
+        while ((line = reader.readLine()) != null){
+            responseBuilder.append(line);
+        }
+        String response = responseBuilder.toString();
+
+        // parse response
+        JSONParser parser = new JSONParser();
+        Object obj = parser.parse(response);
+
+        connection.disconnect();
+        return (JSONObject) obj;
+    }
+
+    private List<Task> convertJSONResponseToTaskList(JSONObject jsonResponse){
+        List<Task> results = new ArrayList<>();
+
+        if (jsonResponse != null) {
+            JSONArray taskJsons = (JSONArray) jsonResponse.get("results");
+            for (Object taskJson : taskJsons){
+                results.add(parseTaskJSON((JSONObject) taskJson));
+            }
+        }
+        return results;
     }
 
     // takes the JSON from the server and makes a Task out of it
@@ -131,5 +217,13 @@ public class ServerRequests {
 
         return new Task(ID, taskName, description, requirements, dateCreated,
                 dateDue, false, dependencies, dependents);
+    }
+
+    private boolean checkStatusCode(JSONObject jsonResponse){
+        if (jsonResponse != null){
+            int statusCode = (int) jsonResponse.get("status_code");
+            return statusCode == 0;
+        }
+        return false;
     }
 }

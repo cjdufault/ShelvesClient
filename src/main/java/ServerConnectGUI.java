@@ -17,7 +17,7 @@ public class ServerConnectGUI extends JFrame {
 
         setContentPane(serverConnectPanel);
         setTitle("Connect to a Server");
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setPreferredSize(new Dimension(400, 100));
         pack();
         setLocationRelativeTo(null);
@@ -28,6 +28,7 @@ public class ServerConnectGUI extends JFrame {
         serverURLTextField.addActionListener(actionEvent -> testConnection());
     }
 
+    // tries to establish a connection with the server, and creates a ClientGUI if connection is successful
     private void testConnection(){
         statusLabel.setText("Testing connection...");
         String serverURL = serverURLTextField.getText();
@@ -36,7 +37,7 @@ public class ServerConnectGUI extends JFrame {
             boolean successfulConnection = requests.testConnection(serverURL);
 
             if (successfulConnection){
-                client.openMainGUI(requests);
+                client.openClientGUI(requests);
                 dispose();
             }
             else {

@@ -8,7 +8,7 @@ public class Client {
     }
 
     // will be called by the ServerConnectGUI when a successful connection has been established
-    public void openMainGUI(ServerRequests requests){
+    public void openClientGUI(ServerRequests requests){
         ClientGUI gui = new ClientGUI(this, requests);
     }
 }
