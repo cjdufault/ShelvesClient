@@ -29,6 +29,7 @@ public class ServerRequests {
     private static final String REMOVE_DEPENDENCY_UPDATE = "/remove_dependency";
     private static final String CLAIM_UPDATE = "/update_claim";
 
+    private static final int TIMEOUT = 15000; // milliseconds until timeout
     private String serverURL;
 
     public String getServerURL(){
@@ -37,7 +38,9 @@ public class ServerRequests {
 
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~GET METHODS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
 
+    // attempts to make a connection with the specified server; sets the serverURL if connection is successful
     public boolean testConnection(String url){
+        // make sure the prefix is "http://"
         if (url.startsWith("https://")){
             serverURL = url.replace("https://", "http://");
         }
@@ -50,15 +53,19 @@ public class ServerRequests {
 
         JSONObject jsonResponse = getRequest(TEST_CONNECTION_QUERY);
         try {
+            // check status code and that the server is a ShelvesServer
             if (jsonResponse != null) {
                 long statusCode = (long) jsonResponse.get("status_code");
-                return statusCode == 0;
+                String serviceName = (String) jsonResponse.get("service_name");
+                return statusCode == 0 && serviceName.equals("ShelvesServer");
             }
+            serverURL = null; // set serverURL to null if connection unsuccessful
             return false;
         }
         catch (NullPointerException e){
             e.printStackTrace();
         }
+        serverURL = null;
         return false;
     }
 
@@ -118,45 +125,59 @@ public class ServerRequests {
         return false;
     }
 
+    public boolean addDependency(){
+        return false;
+    }
+
+    public boolean removeDependency(){
+        return false;
+    }
+
+    public boolean updateClaim(){
+        return false;
+    }
+
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~HELPER METHODS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
 
     private JSONObject getRequest(String queryString){
-        try {
-            URL requestURL = new URL(serverURL + queryString);
-            HttpURLConnection connection = (HttpURLConnection) requestURL.openConnection();
+        if (serverURL != null) {
+            try {
+                URL requestURL = new URL(serverURL + queryString);
+                HttpURLConnection connection = (HttpURLConnection) requestURL.openConnection();
 
-            // setup connection
-            connection.setReadTimeout(15000);
-            connection.setRequestMethod("GET");
-            connection.connect();
+                // setup connection
+                connection.setReadTimeout(TIMEOUT);
+                connection.setRequestMethod("GET");
+                connection.connect();
 
-            return readInputStreamFromHTTPConnection(connection);
-        }
-        catch (ParseException | IOException e){
-            e.printStackTrace();
+                return readInputStreamFromHTTPConnection(connection);
+            } catch (ParseException | IOException e) {
+                e.printStackTrace();
+            }
         }
         return null;
     }
 
     private JSONObject postRequest(String updateString, String requestBody){
-        try{
-            URL updateURL = new URL(serverURL + updateString);
-            HttpURLConnection connection = (HttpURLConnection) updateURL.openConnection();
+        if (serverURL != null) {
+            try {
+                URL updateURL = new URL(serverURL + updateString);
+                HttpURLConnection connection = (HttpURLConnection) updateURL.openConnection();
 
-            // setup connection
-            connection.setReadTimeout(15000);
-            connection.setRequestMethod("POST");
-            connection.connect();
+                // setup connection
+                connection.setReadTimeout(TIMEOUT);
+                connection.setRequestMethod("POST");
+                connection.connect();
 
-            // send request body to the server
-            OutputStream out = connection.getOutputStream();
-            out.write(requestBody.getBytes());
+                // send request body to the server
+                OutputStream out = connection.getOutputStream();
+                out.write(requestBody.getBytes());
 
-            out.close();
-            return readInputStreamFromHTTPConnection(connection);
-        }
-        catch (ParseException | IOException e){
-            e.printStackTrace();
+                out.close();
+                return readInputStreamFromHTTPConnection(connection);
+            } catch (ParseException | IOException e) {
+                e.printStackTrace();
+            }
         }
         return null;
     }
