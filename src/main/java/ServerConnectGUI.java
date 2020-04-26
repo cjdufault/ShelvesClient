@@ -30,11 +30,11 @@ public class ServerConnectGUI extends JFrame {
 
     // tries to establish a connection with the server, and creates a ClientGUI if connection is successful
     private void testConnection(){
-        statusLabel.setText("Testing connection...");
         String serverURL = serverURLTextField.getText();
 
         if (!serverURL.strip().equals("")) {
-            boolean successfulConnection = requests.testConnection(serverURL);
+            requests.setServerURL(serverURL);
+            boolean successfulConnection = requests.testConnection();
 
             if (successfulConnection){
                 client.openClientGUI(requests);

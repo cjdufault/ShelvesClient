@@ -101,15 +101,15 @@ public class Task {
     public JSONObject toJSON(){
         JSONObject json = new JSONObject();
 
-        json.put("ID", ID);
-        json.put("taskName", taskName);
+        json.put("id", ID);
+        json.put("task_name", taskName);
         json.put("description", description);
         json.put("requirements", requirements);
-        json.put("dateCreated", dateCreated);
-        json.put("dateDue", dateDue);
-        json.put("dateComplete", dateComplete);
-        json.put("isComplete", isComplete);
-        json.put("claimedByEmail", claimedByEmail);
+        json.put("date_created", dateCreated.getTime());
+        json.put("date_due", dateDue.getTime());
+        json.put("date_complete", dateComplete.getTime());
+        json.put("is_complete", isComplete);
+        json.put("claimed_by_email", claimedByEmail);
         json.put("dependencies", dependencies);
         json.put("dependents", dependents);
 

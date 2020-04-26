@@ -1,7 +1,5 @@
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import org.json.JSONObject;
+import org.json.JSONArray;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -32,14 +30,7 @@ public class ServerRequests {
     private static final int TIMEOUT = 15000; // milliseconds until timeout
     private String serverURL;
 
-    public String getServerURL(){
-        return serverURL;
-    }
-
-    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~GET METHODS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
-
-    // attempts to make a connection with the specified server; sets the serverURL if connection is successful
-    public boolean testConnection(String url){
+    public void setServerURL(String url) {
         // make sure the prefix is "http://"
         if (url.startsWith("https://")){
             serverURL = url.replace("https://", "http://");
@@ -50,13 +41,21 @@ public class ServerRequests {
         else {
             serverURL = url;
         }
+    }
+    public String getServerURL(){
+        return serverURL;
+    }
 
+    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~GET REQUESTS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+
+    // attempts to make a connection with the specified server; sets the serverURL if connection is successful
+    public boolean testConnection(){
         JSONObject jsonResponse = getRequest(TEST_CONNECTION_QUERY);
         try {
             // check status code and that the server is a ShelvesServer
             if (jsonResponse != null) {
-                long statusCode = (long) jsonResponse.get("status_code");
-                String serviceName = (String) jsonResponse.get("service_name");
+                int statusCode = jsonResponse.getInt("status_code");
+                String serviceName = jsonResponse.getString("service_name");
                 return statusCode == 0 && serviceName.equals("ShelvesServer");
             }
             serverURL = null; // set serverURL to null if connection unsuccessful
@@ -88,8 +87,8 @@ public class ServerRequests {
         JSONObject jsonResponse = getRequest(GET_TASK_QUERY + ID);
 
         if (jsonResponse != null) {
-            JSONArray jsonArray = (JSONArray) jsonResponse.get("results");
-            return parseTaskJSON((JSONObject) jsonArray.get(0));
+            JSONArray jsonArray = jsonResponse.getJSONArray("results");
+            return parseTaskJSON(jsonArray.getJSONObject(0));
         }
         return null;
     }
@@ -119,25 +118,32 @@ public class ServerRequests {
         return checkStatusCode(jsonResponse);
     }
 
-    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~POST METHODS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~POST REQUESTS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
 
-    public boolean addTask(){
-        return false;
+    public boolean addTask(Task task){
+        JSONObject jsonResponse = postRequest(ADD_TASK_UPDATE, task.toJSON().toString());
+        return checkStatusCode(jsonResponse);
     }
 
-    public boolean addDependency(){
-        return false;
+    public boolean addDependency(int dependentID, int dependencyID){
+        String requestBody = String.format("{\"dependent_id\":%d,\"dependency_id\":%d}", dependentID, dependencyID);
+        JSONObject jsonResponse = postRequest(ADD_DEPENDENCY_UPDATE, requestBody);
+        return checkStatusCode(jsonResponse);
     }
 
-    public boolean removeDependency(){
-        return false;
+    public boolean removeDependency(int dependentID, int dependencyID){
+        String requestBody = String.format("{\"dependent_id\":%d,\"dependency_id\":%d}", dependentID, dependencyID);
+        JSONObject jsonResponse = postRequest(REMOVE_DEPENDENCY_UPDATE, requestBody);
+        return checkStatusCode(jsonResponse);
     }
 
-    public boolean updateClaim(){
-        return false;
+    public boolean updateClaim(int ID, String claimedByEmail){
+        String requestBody = String.format("{\"id\":%d,\"claimed_by_email\":%s}", ID, claimedByEmail);
+        JSONObject jsonResponse = postRequest(CLAIM_UPDATE, requestBody);
+        return checkStatusCode(jsonResponse);
     }
 
-    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~HELPER METHODS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~REQUEST METHODS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
 
     private JSONObject getRequest(String queryString){
         if (serverURL != null) {
@@ -151,7 +157,7 @@ public class ServerRequests {
                 connection.connect();
 
                 return readInputStreamFromHTTPConnection(connection);
-            } catch (ParseException | IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -175,14 +181,16 @@ public class ServerRequests {
 
                 out.close();
                 return readInputStreamFromHTTPConnection(connection);
-            } catch (ParseException | IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         return null;
     }
 
-    private JSONObject readInputStreamFromHTTPConnection(HttpURLConnection connection) throws IOException, ParseException{
+    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~HELPER METHODS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+
+    private JSONObject readInputStreamFromHTTPConnection(HttpURLConnection connection) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
         StringBuilder responseBuilder = new StringBuilder();
 
@@ -194,18 +202,17 @@ public class ServerRequests {
         String response = responseBuilder.toString();
 
         // parse response
-        JSONParser parser = new JSONParser();
-        Object obj = parser.parse(response);
+        JSONObject json = new JSONObject(response);
 
         connection.disconnect();
-        return (JSONObject) obj;
+        return json;
     }
 
     private List<Task> convertJSONResponseToTaskList(JSONObject jsonResponse){
         List<Task> results = new ArrayList<>();
 
         if (jsonResponse != null) {
-            JSONArray taskJsons = (JSONArray) jsonResponse.get("results");
+            JSONArray taskJsons = jsonResponse.getJSONArray("results");
             for (Object taskJson : taskJsons){
                 results.add(parseTaskJSON((JSONObject) taskJson));
             }
@@ -216,33 +223,40 @@ public class ServerRequests {
     // takes the JSON from the server and makes a Task out of it
     private Task parseTaskJSON(JSONObject response){
         // the easy ones
-        int ID = (int) response.get("ID");
-        String taskName = (String) response.get("taskName");
-        String description = (String) response.get("description");
-        Date dateCreated = new Date((Long) response.get("dateCreated"));
-        Date dateDue = new Date((Long) response.get("dateDue"));
+        int ID = response.getInt("id");
+        String taskName = response.getString("task_name");
+        String description = response.getString("description");
+        Date dateCreated = new Date(response.getLong("date_created"));
+        Date dateDue = new Date(response.getLong("date_due"));
+        boolean isComplete = response.getBoolean("is_complete");
+
+        Date dateComplete = null;
+        if (isComplete){
+            dateComplete = new Date(response.getLong("date_complete"));
+        }
+        String claimedByEmail = response.getString("claimed_by_email");
 
         // convert the JSONArrays to Lists
         List<String> requirements = new ArrayList<>();
-        for (Object requirement : (org.json.simple.JSONArray) response.get("requirements")){
+        for (Object requirement : response.getJSONArray("requirements")){
             requirements.add(requirement.toString());
         }
         List<String> dependencies = new ArrayList<>();
-        for (Object dependency : (org.json.simple.JSONArray) response.get("dependencies")){
+        for (Object dependency : response.getJSONArray("dependencies")){
             dependencies.add(dependency.toString());
         }
         List<String> dependents = new ArrayList<>();
-        for (Object dependent : (org.json.simple.JSONArray) response.get("dependents")){
+        for (Object dependent : response.getJSONArray("dependents")){
             dependents.add(dependent.toString());
         }
 
         return new Task(ID, taskName, description, requirements, dateCreated,
-                dateDue, false, dependencies, dependents);
+                dateDue, dateComplete, isComplete, claimedByEmail, dependencies, dependents);
     }
 
     private boolean checkStatusCode(JSONObject jsonResponse){
         if (jsonResponse != null){
-            int statusCode = (int) jsonResponse.get("status_code");
+            int statusCode = jsonResponse.getInt("status_code");
             return statusCode == 0;
         }
         return false;

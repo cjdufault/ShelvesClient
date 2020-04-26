@@ -1,13 +1,24 @@
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import java.util.List;
 
 public class ClientGUI extends JFrame{
 
     private Client client;
     private ServerRequests requests;
+    private List<Task> allTasks;
+    private List<Task> completeTasks;
+    private List<Task> incompleteTasks;
+    private TableModel tableModel;
 
     private JPanel mainPanel;
     private JTable shelf;
-    private JButton detailsButton;
+    private JLabel tableLabel;
+    private JButton allTasksButton;
+    private JButton incompleteTasksButton;
+    private JButton completeTasksButton;
+    private JButton refreshButton;
     private JMenuItem aboutMenuItem;
     private JMenuItem openServerConnectionMenuItem;
     private JMenuItem quitMenuItem;
@@ -24,6 +35,14 @@ public class ClientGUI extends JFrame{
 
         addMenuBar();
         addActionListeners();
+
+        allTasks = requests.getAllTasks();
+        completeTasks = requests.getCompleteTasks();
+        incompleteTasks = requests.getIncompleteTasks();
+
+        showTasksOnShelf(incompleteTasks);
+        shelf.setModel(tableModel);
+        shelf.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
     private void addMenuBar() {
@@ -43,8 +62,19 @@ public class ClientGUI extends JFrame{
     }
 
     private void addActionListeners(){
-        detailsButton.addActionListener(actionEvent -> {
+        allTasksButton.addActionListener(actionEvent -> {
+            tableLabel.setText("All tasks:");
+            showTasksOnShelf(allTasks);
+        });
 
+        completeTasksButton.addActionListener(actionEvent -> {
+            tableLabel.setText("Complete Tasks:");
+            showTasksOnShelf(completeTasks);
+        });
+
+        incompleteTasksButton.addActionListener(actionEvent -> {
+            tableLabel.setText("Incomplete Tasks:");
+            showTasksOnShelf(incompleteTasks);
         });
 
         aboutMenuItem.addActionListener(actionEvent -> {
@@ -56,5 +86,33 @@ public class ClientGUI extends JFrame{
         });
 
         quitMenuItem.addActionListener(actionEvent -> dispose());
+    }
+
+    private void showTasksOnShelf(List<Task> tasks){
+        String[] tableColumnNames = {"Task Name", "Description", "Date Due", "Complete?"};
+        String[][] tableData = new String[tasks.size()][4];
+
+        // make a 2D array that represents each task and the attributes of that task that will be displayed on the table
+        for (int i = 0; i < tasks.size(); i++) {
+            Task task = tasks.get(i);
+            tableData[i][0] = task.getTaskName();
+            tableData[i][1] = task.getDescription();
+            tableData[i][2] = task.getDateDue().toString();
+            if (task.getComplete()) {
+                tableData[i][3] = "Yes";
+            } else {
+                tableData[i][3] = "No";
+            }
+        }
+
+        // add the data to the table
+        tableModel = new DefaultTableModel(tableData, tableColumnNames) {
+            // override this method so that cells cannot be edited
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        shelf.setModel(tableModel);
     }
 }
