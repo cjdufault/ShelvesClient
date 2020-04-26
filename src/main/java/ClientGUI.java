@@ -36,10 +36,7 @@ public class ClientGUI extends JFrame{
         addMenuBar();
         addActionListeners();
 
-        allTasks = requests.getAllTasks();
-        completeTasks = requests.getCompleteTasks();
-        incompleteTasks = requests.getIncompleteTasks();
-
+        updateTaskLists();
         showTasksOnShelf(incompleteTasks);
         shelf.setModel(tableModel);
         shelf.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -62,6 +59,28 @@ public class ClientGUI extends JFrame{
     }
 
     private void addActionListeners(){
+        refreshButton.addActionListener(actionEvent -> {
+            updateTaskLists();
+            switch (tableLabel.getText()) { // show the tasks list that was previously being displayed, but updated
+                case "All tasks:": {
+                    showTasksOnShelf(allTasks);
+                    break;
+                }
+                case "Complete Tasks:": {
+                    showTasksOnShelf(completeTasks);
+                    break;
+                }
+                case "Incomplete Tasks:": {
+                    showTasksOnShelf(incompleteTasks);
+                    break;
+                }
+                default: { // show incomplete tasks if the label is something else for some reason
+                    incompleteTasksButton.doClick();
+                    break;
+                }
+            }
+        });
+
         allTasksButton.addActionListener(actionEvent -> {
             tableLabel.setText("All tasks:");
             showTasksOnShelf(allTasks);
@@ -114,5 +133,11 @@ public class ClientGUI extends JFrame{
             }
         };
         shelf.setModel(tableModel);
+    }
+
+    private void updateTaskLists(){
+        allTasks = requests.getAllTasks();
+        completeTasks = requests.getCompleteTasks();
+        incompleteTasks = requests.getIncompleteTasks();
     }
 }
