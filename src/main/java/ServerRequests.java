@@ -229,12 +229,17 @@ public class ServerRequests {
         Date dateCreated = new Date(response.getLong("date_created"));
         Date dateDue = new Date(response.getLong("date_due"));
         boolean isComplete = response.getBoolean("is_complete");
+        boolean isClaimed = response.getBoolean("is_claimed");
 
         Date dateComplete = null;
         if (isComplete){
             dateComplete = new Date(response.getLong("date_complete"));
         }
-        String claimedByEmail = response.getString("claimed_by_email");
+
+        String claimedByEmail = null;
+        if (isClaimed) {
+            claimedByEmail = response.getString("claimed_by_email");
+        }
 
         // convert the JSONArrays to Lists
         List<String> requirements = new ArrayList<>();
@@ -251,7 +256,7 @@ public class ServerRequests {
         }
 
         return new Task(ID, taskName, description, requirements, dateCreated,
-                dateDue, dateComplete, isComplete, claimedByEmail, dependencies, dependents);
+                dateDue, dateComplete, isComplete, isClaimed, claimedByEmail, dependencies, dependents);
     }
 
     private boolean checkStatusCode(JSONObject jsonResponse){

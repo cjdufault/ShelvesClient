@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 public class TaskDetailsGUI extends JFrame{
@@ -14,9 +16,11 @@ public class TaskDetailsGUI extends JFrame{
 
     private List<Task> dependencies;
     private List<Task> dependents;
+    private ServerRequests requests;
 
     TaskDetailsGUI(Task task, ServerRequests requests, Component parentComponent){
         this.task = task;
+        this.requests = requests;
 
         dependencies = requests.getDependencies(task.getID());
         dependents = requests.getDependents(task.getID());
@@ -44,10 +48,10 @@ public class TaskDetailsGUI extends JFrame{
         reqsListModel.addAll(task.getRequirements());
         for (Task task : dependencies){
             if (task.getComplete()) {
-                dependenciesListModel.addElement(task.getTaskName() + "\t\tComplete");
+                dependenciesListModel.addElement(task.getTaskName() + ":    Complete");
             }
             else {
-                dependenciesListModel.addElement(task.getTaskName() + "\t\tIncomplete");
+                dependenciesListModel.addElement(task.getTaskName() + ":    Incomplete");
             }
         }
         for (Task task : dependents){
@@ -56,8 +60,27 @@ public class TaskDetailsGUI extends JFrame{
 
         reqsList.setModel(reqsListModel);
 
-        // TODO: make these clickable, opening their own TDGUIs
         dependenciesList.setModel(dependenciesListModel);
         dependentsList.setModel(dependentsListModel);
+
+        addDoubleClickMouseListener(dependenciesList, dependencies);
+        addDoubleClickMouseListener(dependentsList, dependents);
+    }
+
+    private void addDoubleClickMouseListener(JList<String> jList, List<Task> taskList){
+        Component thisGUI = this;
+
+        jList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                Point point = e.getPoint();
+                if (e.getClickCount() == 2){
+                    int selectedIndex = jList.locationToIndex(point);
+                    if (selectedIndex >= 0){
+                        new TaskDetailsGUI(taskList.get(selectedIndex), requests, thisGUI);
+                    }
+                }
+            }
+        });
     }
 }
