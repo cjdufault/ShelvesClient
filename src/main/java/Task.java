@@ -107,11 +107,19 @@ public class Task {
         json.put("requirements", requirements);
         json.put("date_created", dateCreated.getTime());
         json.put("date_due", dateDue.getTime());
-        json.put("date_complete", dateComplete.getTime());
         json.put("is_complete", isComplete);
-        json.put("claimed_by_email", claimedByEmail);
         json.put("dependencies", dependencies);
         json.put("dependents", dependents);
+
+        if (isComplete) {
+            json.put("date_complete", dateComplete.getTime());
+            json.put("claimed_by_email", claimedByEmail);
+            json.put("dependencies", dependencies);
+            json.put("dependents", dependents);
+        }
+        else if (claimedByEmail != null){
+            json.put("claimed_by_email", claimedByEmail);
+        }
 
         return json;
     }

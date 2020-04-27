@@ -1,6 +1,10 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.List;
 
 public class ClientGUI extends JFrame{
@@ -10,7 +14,8 @@ public class ClientGUI extends JFrame{
     private List<Task> allTasks;
     private List<Task> completeTasks;
     private List<Task> incompleteTasks;
-    private TableModel tableModel;
+    private List<Task> currentTasksList;
+    private DefaultTableModel tableModel;
 
     private JPanel mainPanel;
     private JTable shelf;
@@ -63,14 +68,17 @@ public class ClientGUI extends JFrame{
             updateTaskLists();
             switch (tableLabel.getText()) { // show the tasks list that was previously being displayed, but updated
                 case "All tasks:": {
+                    currentTasksList = allTasks;
                     showTasksOnShelf(allTasks);
                     break;
                 }
                 case "Complete Tasks:": {
+                    currentTasksList = completeTasks;
                     showTasksOnShelf(completeTasks);
                     break;
                 }
                 case "Incomplete Tasks:": {
+                    currentTasksList = incompleteTasks;
                     showTasksOnShelf(incompleteTasks);
                     break;
                 }
@@ -105,9 +113,25 @@ public class ClientGUI extends JFrame{
         });
 
         quitMenuItem.addActionListener(actionEvent -> dispose());
+
+        // show task details for the task corresponding to a row that has been double clicked
+        shelf.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                Point point = e.getPoint(); // location of click
+                if (e.getClickCount() == 2) { // only do if double clicked
+                    int selectedRow = shelf.rowAtPoint(point);
+                    if (selectedRow >= 0) {
+                        showTaskDetails(currentTasksList.get(selectedRow));
+                    }
+                }
+            }
+        });
     }
 
     private void showTasksOnShelf(List<Task> tasks){
+        currentTasksList = tasks;
+
         String[] tableColumnNames = {"Task Name", "Description", "Date Due", "Complete?"};
         String[][] tableData = new String[tasks.size()][4];
 
@@ -139,5 +163,9 @@ public class ClientGUI extends JFrame{
         allTasks = requests.getAllTasks();
         completeTasks = requests.getCompleteTasks();
         incompleteTasks = requests.getIncompleteTasks();
+    }
+
+    private void showTaskDetails(Task task){
+        new TaskDetailsGUI(task, requests,this);
     }
 }
