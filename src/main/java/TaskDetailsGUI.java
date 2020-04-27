@@ -3,9 +3,12 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
-import java.util.Locale;
 
 public class TaskDetailsGUI extends JFrame{
+
+    int screenWidth;
+    int screenHeight;
+
     private Task task;
     private JPanel mainPanel;
     private JButton closeButton;
@@ -19,9 +22,15 @@ public class TaskDetailsGUI extends JFrame{
     private List<Task> dependents;
     private ServerRequests requests;
 
-    TaskDetailsGUI(Task task, ServerRequests requests, Component parentComponent){
+    TaskDetailsGUI(Task task, ServerRequests requests, int screenWidth, int screenHeight){
         this.task = task;
         this.requests = requests;
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
+
+        double heightScalingFactor = 0.7;
+        double widthScalingFactor = 0.4;
+        Dimension windowSize = new Dimension((int) (screenWidth * widthScalingFactor), (int) (screenHeight * heightScalingFactor));
 
         dependencies = requests.getDependencies(task.getID());
         dependents = requests.getDependents(task.getID());
@@ -29,7 +38,8 @@ public class TaskDetailsGUI extends JFrame{
         setContentPane(mainPanel);
         setTitle(String.format("Task Details - %s", task.getTaskName()));
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(parentComponent);
+        setPreferredSize(windowSize);
+        setLocation(screenWidth - windowSize.width, 0);
         pack();
         setVisible(true);
 
@@ -68,8 +78,6 @@ public class TaskDetailsGUI extends JFrame{
     }
 
     private void addDoubleClickMouseListener(JList<String> jList, List<Task> taskList){
-        Component thisGUI = this;
-
         jList.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -77,7 +85,7 @@ public class TaskDetailsGUI extends JFrame{
                 if (e.getClickCount() == 2){
                     int selectedIndex = jList.locationToIndex(point);
                     if (selectedIndex >= 0){
-                        new TaskDetailsGUI(taskList.get(selectedIndex), requests, thisGUI);
+                        new TaskDetailsGUI(taskList.get(selectedIndex), requests, screenWidth, screenHeight);
                     }
                 }
             }

@@ -7,6 +7,9 @@ import java.util.List;
 
 public class ClientGUI extends JFrame{
 
+    private int screenWidth;
+    private int screenHeight;
+
     private Client client;
     private ServerRequests requests;
     private List<Task> allTasks;
@@ -26,13 +29,19 @@ public class ClientGUI extends JFrame{
     private JMenuItem openServerConnectionMenuItem;
     private JMenuItem quitMenuItem;
 
-    ClientGUI(Client client, ServerRequests requests){
+    ClientGUI(Client client, ServerRequests requests, int screenWidth, int screenHeight){
         this.client = client;
         this.requests = requests;
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
+
+        double scalingFactor = 0.75;
+        Dimension windowSize = new Dimension((int) (screenWidth * scalingFactor), (int) (screenHeight * scalingFactor));
 
         setContentPane(mainPanel);
         setTitle(String.format("Shelves - %s", requests.getServerURL()));
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        setPreferredSize(windowSize);
         pack();
         setVisible(true);
 
@@ -164,6 +173,6 @@ public class ClientGUI extends JFrame{
     }
 
     private void showTaskDetails(Task task){
-        new TaskDetailsGUI(task, requests,this);
+        new TaskDetailsGUI(task, requests, screenWidth, screenHeight);
     }
 }
