@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import java.util.Locale;
 
 public class TaskDetailsGUI extends JFrame{
     private Task task;
@@ -28,7 +29,6 @@ public class TaskDetailsGUI extends JFrame{
         setContentPane(mainPanel);
         setTitle(String.format("Task Details - %s", task.getTaskName()));
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        setPreferredSize(new Dimension(500, 400));
         setLocationRelativeTo(parentComponent);
         pack();
         setVisible(true);
@@ -48,10 +48,10 @@ public class TaskDetailsGUI extends JFrame{
         reqsListModel.addAll(task.getRequirements());
         for (Task task : dependencies){
             if (task.getComplete()) {
-                dependenciesListModel.addElement(task.getTaskName() + ":    Complete");
+                dependenciesListModel.addElement(task.getTaskName() + " -- Complete");
             }
             else {
-                dependenciesListModel.addElement(task.getTaskName() + ":    Incomplete");
+                dependenciesListModel.addElement(task.getTaskName() + " -- Incomplete");
             }
         }
         for (Task task : dependents){
