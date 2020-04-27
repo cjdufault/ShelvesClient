@@ -16,6 +16,10 @@ public class Client {
 
     // will be called by the ServerConnectGUI when a successful connection has been established
     public void openClientGUI(ServerRequests requests){
-        ClientGUI gui = new ClientGUI(this, requests, screenWidth, screenHeight);
+        new ClientGUI(this, requests, screenWidth, screenHeight);
+    }
+
+    public void openTaskDetailsGUI(Task task, ServerRequests requests){
+        new TaskDetailsGUI(task, requests, screenWidth, screenHeight);
     }
 }

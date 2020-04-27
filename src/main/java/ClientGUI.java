@@ -129,7 +129,7 @@ public class ClientGUI extends JFrame{
                 if (e.getClickCount() == 2) { // only do if double clicked
                     int selectedRow = shelf.rowAtPoint(point);
                     if (selectedRow >= 0) {
-                        showTaskDetails(currentTasksList.get(selectedRow));
+                        client.openTaskDetailsGUI(currentTasksList.get(selectedRow), requests);
                     }
                 }
             }
@@ -170,9 +170,5 @@ public class ClientGUI extends JFrame{
         allTasks = requests.getAllTasks();
         completeTasks = requests.getCompleteTasks();
         incompleteTasks = requests.getIncompleteTasks();
-    }
-
-    private void showTaskDetails(Task task){
-        new TaskDetailsGUI(task, requests, screenWidth, screenHeight);
     }
 }
