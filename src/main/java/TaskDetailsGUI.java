@@ -13,10 +13,14 @@ public class TaskDetailsGUI extends JFrame{
     private JPanel mainPanel;
     private JButton closeButton;
     private JLabel nameLabel;
-    private JLabel descLabel;
     private JList<String> reqsList;
     private JList<String> dependenciesList;
     private JList<String> dependentsList;
+    private JLabel completeLabel;
+    private JLabel dateCreatedLabel;
+    private JLabel dateDueLabel;
+    private JLabel dateCompleteLabel;
+    private JTextPane descTextPane;
 
     private List<Task> dependencies;
     private List<Task> dependents;
@@ -49,7 +53,17 @@ public class TaskDetailsGUI extends JFrame{
 
     private void setupDetailsComponents(){
         nameLabel.setText(task.getTaskName());
-        descLabel.setText(task.getDescription());
+        descTextPane.setText(task.getDescription());
+        dateCreatedLabel.setText("Date Created: " + task.getDateCreated().toString());
+        dateDueLabel.setText("Date Due: " + task.getDateCreated().toString());
+        if (task.getComplete()){
+            completeLabel.setText("Complete");
+            dateCompleteLabel.setText("Date Complete: " + task.getDateComplete().toString());
+        }
+        else {
+            completeLabel.setText("Incomplete");
+            dateCompleteLabel.setText("Date Complete: N/A");
+        }
 
         DefaultListModel<String> reqsListModel = new DefaultListModel<>();
         DefaultListModel<String> dependenciesListModel = new DefaultListModel<>();

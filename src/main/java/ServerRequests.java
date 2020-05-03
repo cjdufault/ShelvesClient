@@ -20,8 +20,8 @@ public class ServerRequests {
     private static final String SEARCH_QUERY = "/search/";
     private static final String GET_DEPENDENCIES_QUERY = "/get_dependencies/";
     private static final String GET_DEPENDENTS_QUERY = "/get_dependents/";
-    private static final String REMOVE_TASK_QUERY = "/remove_task/";
-    private static final String COMPLETE_TASK_QUERY = "/complete_task/";
+    private static final String REMOVE_TASK_UPDATE = "/remove_task/";
+    private static final String COMPLETE_TASK_UPDATE = "/complete_task/";
     private static final String ADD_TASK_UPDATE = "/add_task";
     private static final String ADD_DEPENDENCY_UPDATE = "/add_dependency";
     private static final String REMOVE_DEPENDENCY_UPDATE = "/remove_dependency";
@@ -108,16 +108,6 @@ public class ServerRequests {
         return convertJSONResponseToTaskList(jsonResponse);
     }
 
-    public boolean removeTask(int ID){
-        JSONObject jsonResponse = getRequest(REMOVE_TASK_QUERY + ID);
-        return checkStatusCode(jsonResponse);
-    }
-
-    public boolean completeTask(int ID){
-        JSONObject jsonResponse = getRequest(COMPLETE_TASK_QUERY + ID);
-        return checkStatusCode(jsonResponse);
-    }
-
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~POST REQUESTS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
 
     public boolean addTask(Task task){
@@ -134,6 +124,18 @@ public class ServerRequests {
     public boolean removeDependency(int dependentID, int dependencyID){
         String requestBody = String.format("{\"dependent_id\":%d,\"dependency_id\":%d}", dependentID, dependencyID);
         JSONObject jsonResponse = postRequest(REMOVE_DEPENDENCY_UPDATE, requestBody);
+        return checkStatusCode(jsonResponse);
+    }
+
+    public boolean removeTask(int ID){
+        String requestBody = String.format("{\"id\":%d}", ID);
+        JSONObject jsonResponse = postRequest(REMOVE_TASK_UPDATE, requestBody);
+        return checkStatusCode(jsonResponse);
+    }
+
+    public boolean completeTask(int ID){
+        String requestBody = String.format("{\"id\":%d}", ID);
+        JSONObject jsonResponse = postRequest(COMPLETE_TASK_UPDATE, requestBody);
         return checkStatusCode(jsonResponse);
     }
 
