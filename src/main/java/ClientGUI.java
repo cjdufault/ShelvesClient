@@ -7,9 +7,6 @@ import java.util.List;
 
 public class ClientGUI extends JFrame{
 
-    private int screenWidth;
-    private int screenHeight;
-
     private Client client;
     private ServerRequests requests;
     private List<Task> allTasks;
@@ -25,6 +22,8 @@ public class ClientGUI extends JFrame{
     private JButton incompleteTasksButton;
     private JButton completeTasksButton;
     private JButton refreshButton;
+    private JTextField searchField;
+    private JButton searchButton;
     private JMenuItem aboutMenuItem;
     private JMenuItem openServerConnectionMenuItem;
     private JMenuItem quitMenuItem;
@@ -32,8 +31,6 @@ public class ClientGUI extends JFrame{
     ClientGUI(Client client, ServerRequests requests, int screenWidth, int screenHeight){
         this.client = client;
         this.requests = requests;
-        this.screenWidth = screenWidth;
-        this.screenHeight = screenHeight;
 
         double scalingFactor = 0.75;
         Dimension windowSize = new Dimension((int) (screenWidth * scalingFactor), (int) (screenHeight * scalingFactor));
@@ -71,6 +68,20 @@ public class ClientGUI extends JFrame{
     }
 
     private void addActionListeners(){
+        searchButton.addActionListener(actionEvent -> {
+            String query = searchField.getText();
+            if (!query.isBlank()) { // only do search if field has something that's not whitespace typed in
+                tableLabel.setText("Search Results:");
+                showTasksOnShelf(requests.search(query));
+                refreshButton.setEnabled(false);
+            }
+            else {
+                searchField.setText(""); // will erase any whitespace that's been typed in
+            }
+        });
+        searchField.addActionListener(actionEvent -> searchButton.doClick());
+
+        // re-requests the server for task lists and redraws the table
         refreshButton.addActionListener(actionEvent -> {
             updateTaskLists();
             switch (tableLabel.getText()) { // show the tasks list that was previously being displayed, but updated
@@ -99,16 +110,19 @@ public class ClientGUI extends JFrame{
         allTasksButton.addActionListener(actionEvent -> {
             tableLabel.setText("All tasks:");
             showTasksOnShelf(allTasks);
+            refreshButton.setEnabled(true);
         });
 
         completeTasksButton.addActionListener(actionEvent -> {
             tableLabel.setText("Complete Tasks:");
             showTasksOnShelf(completeTasks);
+            refreshButton.setEnabled(true);
         });
 
         incompleteTasksButton.addActionListener(actionEvent -> {
             tableLabel.setText("Incomplete Tasks:");
             showTasksOnShelf(incompleteTasks);
+            refreshButton.setEnabled(true);
         });
 
         aboutMenuItem.addActionListener(actionEvent -> {
