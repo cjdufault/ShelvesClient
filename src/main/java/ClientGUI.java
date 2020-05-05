@@ -3,14 +3,12 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class ClientGUI extends JFrame{
 
-    private Client client;
-    private ServerRequests requests;
+    private final Client client;
+    private final ServerRequests requests;
     private List<Task> allTasks;
     private List<Task> completeTasks;
     private List<Task> incompleteTasks;
@@ -28,6 +26,7 @@ public class ClientGUI extends JFrame{
     private JButton searchButton;
     private JButton addTaskButton;
     private JMenuItem aboutMenuItem;
+    private JMenuItem authenticateMenuItem;
     private JMenuItem newServerConnectionMenuItem;
     private JMenuItem quitMenuItem;
 
@@ -60,14 +59,16 @@ public class ClientGUI extends JFrame{
     private void addMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
-        JMenu fileMenu = new JMenu("File");
+        JMenu fileMenu = new JMenu("Menu");
         menuBar.add(fileMenu);
 
         aboutMenuItem = new JMenuItem("About");
+        authenticateMenuItem = new JMenuItem("Login as Admin");
         newServerConnectionMenuItem = new JMenuItem("New Server Connection");
         quitMenuItem = new JMenuItem("Quit");
 
         fileMenu.add(aboutMenuItem);
+        fileMenu.add(authenticateMenuItem);
         fileMenu.add(newServerConnectionMenuItem);
         fileMenu.add(quitMenuItem);
         setJMenuBar(menuBar);
@@ -134,6 +135,10 @@ public class ClientGUI extends JFrame{
 
         aboutMenuItem.addActionListener(actionEvent -> {
 
+        });
+
+        authenticateMenuItem.addActionListener(actionEvent -> {
+            new PasswordInput(requests.getAuth(), requests);
         });
 
         newServerConnectionMenuItem.addActionListener(actionEvent -> {

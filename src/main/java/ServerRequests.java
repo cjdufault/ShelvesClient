@@ -21,6 +21,7 @@ public class ServerRequests {
     private static final String SEARCH_QUERY = "/search/";
     private static final String GET_DEPENDENCIES_QUERY = "/get_dependencies/";
     private static final String GET_DEPENDENTS_QUERY = "/get_dependents/";
+    private static final String TEST_AUTH = "/auth";
     private static final String REMOVE_TASK_UPDATE = "/remove_task/";
     private static final String COMPLETE_TASK_UPDATE = "/complete_task/";
     private static final String ADD_TASK_UPDATE = "/add_task";
@@ -30,7 +31,7 @@ public class ServerRequests {
 
     private static final int TIMEOUT = 15000; // milliseconds until timeout
     private String serverURL;
-    private ClientSideAuthentication auth;
+    private final ClientSideAuthentication auth;
 
     ServerRequests(){
         auth = new ClientSideAuthentication();
@@ -51,6 +52,8 @@ public class ServerRequests {
     public String getServerURL(){
         return serverURL;
     }
+
+    public ClientSideAuthentication getAuth(){ return auth; }
 
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~GET REQUESTS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
 
@@ -115,6 +118,11 @@ public class ServerRequests {
     }
 
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~POST REQUESTS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+
+    public boolean authenticate(){
+        JSONObject jsonResponse = postRequest(TEST_AUTH, " ");
+        return checkStatusCode(jsonResponse);
+    }
 
     public boolean addTask(Task task){
         JSONObject jsonResponse = postRequest(ADD_TASK_UPDATE, task.toJSON().toString());
@@ -198,7 +206,7 @@ public class ServerRequests {
     private JSONObject postRequest(String updateString, String requestBody){
         // have the user input a password if none has been set this session
         if (!auth.passwordIsSet()){
-
+            new PasswordInput(auth, this);
         }
 
         String nonce = requestNonce();

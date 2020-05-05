@@ -3,9 +3,9 @@ import java.awt.*;
 public class Client {
 
     // get the size of the active display
-    private GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-    private int screenWidth = gd.getDisplayMode().getWidth();
-    private int screenHeight = gd.getDisplayMode().getHeight();
+    private final GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+    private final int screenWidth = gd.getDisplayMode().getWidth();
+    private final int screenHeight = gd.getDisplayMode().getHeight();
 
     public static void main(String[] args) {
         Client client = new Client();

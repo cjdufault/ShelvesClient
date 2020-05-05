@@ -5,13 +5,8 @@ class ClientSideAuthentication {
 
     private String passwordHash;
 
-    void setCredentials(char[] password){
-        StringBuilder pwStringBuilder = new StringBuilder();
-        for (char c : password){
-            pwStringBuilder.append(c);
-        }
-        System.out.println(pwStringBuilder.toString());
-        passwordHash = hash(pwStringBuilder.toString());
+    void setCredentials(String password){
+        passwordHash = hash(password);
     }
 
     void clearCredentials(){

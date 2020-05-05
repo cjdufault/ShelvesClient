@@ -9,7 +9,7 @@ public class TaskDetailsGUI extends JFrame{
     int screenWidth;
     int screenHeight;
 
-    private Task task;
+    private final Task task;
     private JPanel mainPanel;
     private JButton closeButton;
     private JLabel nameLabel;
@@ -22,9 +22,9 @@ public class TaskDetailsGUI extends JFrame{
     private JLabel dateCompleteLabel;
     private JTextPane descTextPane;
 
-    private List<Task> dependencies;
-    private List<Task> dependents;
-    private ServerRequests requests;
+    private final List<Task> dependencies;
+    private final List<Task> dependents;
+    private final ServerRequests requests;
 
     TaskDetailsGUI(Task task, ServerRequests requests, int screenWidth, int screenHeight){
         this.task = task;

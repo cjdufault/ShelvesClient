@@ -8,8 +8,8 @@ public class ServerConnectGUI extends JFrame {
     private JPanel serverConnectPanel;
     private JLabel statusLabel;
 
-    private Client client;
-    private ServerRequests requests;
+    private final Client client;
+    private final ServerRequests requests;
 
     ServerConnectGUI(Client client){
         this.client = client;
