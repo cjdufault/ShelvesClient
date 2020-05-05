@@ -3,6 +3,8 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class ClientGUI extends JFrame{
@@ -24,17 +26,20 @@ public class ClientGUI extends JFrame{
     private JButton refreshButton;
     private JTextField searchField;
     private JButton searchButton;
+    private JButton addTaskButton;
     private JMenuItem aboutMenuItem;
-    private JMenuItem openServerConnectionMenuItem;
+    private JMenuItem newServerConnectionMenuItem;
     private JMenuItem quitMenuItem;
 
     ClientGUI(Client client, ServerRequests requests, int screenWidth, int screenHeight){
         this.client = client;
         this.requests = requests;
 
+        // determine the size of the window
         double scalingFactor = 0.75;
         Dimension windowSize = new Dimension((int) (screenWidth * scalingFactor), (int) (screenHeight * scalingFactor));
 
+        // configure window and set visible
         setContentPane(mainPanel);
         setTitle(String.format("Shelves - %s", requests.getServerURL()));
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -45,6 +50,7 @@ public class ClientGUI extends JFrame{
         addMenuBar();
         addActionListeners();
 
+        // get data from server and display it on the table
         updateTaskLists();
         showTasksOnShelf(incompleteTasks);
         shelf.setModel(tableModel);
@@ -58,11 +64,11 @@ public class ClientGUI extends JFrame{
         menuBar.add(fileMenu);
 
         aboutMenuItem = new JMenuItem("About");
-        openServerConnectionMenuItem = new JMenuItem("Open Server Connection");
+        newServerConnectionMenuItem = new JMenuItem("New Server Connection");
         quitMenuItem = new JMenuItem("Quit");
 
         fileMenu.add(aboutMenuItem);
-        fileMenu.add(openServerConnectionMenuItem);
+        fileMenu.add(newServerConnectionMenuItem);
         fileMenu.add(quitMenuItem);
         setJMenuBar(menuBar);
     }
@@ -70,14 +76,13 @@ public class ClientGUI extends JFrame{
     private void addActionListeners(){
         searchButton.addActionListener(actionEvent -> {
             String query = searchField.getText();
+
             if (!query.isBlank()) { // only do search if field has something that's not whitespace typed in
-                tableLabel.setText("Search Results:");
+                tableLabel.setText(String.format("Search Results for \"%s\":", query));
                 showTasksOnShelf(requests.search(query));
-                refreshButton.setEnabled(false);
             }
-            else {
-                searchField.setText(""); // will erase any whitespace that's been typed in
-            }
+
+            searchField.setText(""); // clear field
         });
         searchField.addActionListener(actionEvent -> searchButton.doClick());
 
@@ -100,7 +105,7 @@ public class ClientGUI extends JFrame{
                     showTasksOnShelf(incompleteTasks);
                     break;
                 }
-                default: { // show incomplete tasks if the label is something else for some reason
+                default: { // show incomplete tasks if the label is something else, like a search result
                     incompleteTasksButton.doClick();
                     break;
                 }
@@ -110,26 +115,28 @@ public class ClientGUI extends JFrame{
         allTasksButton.addActionListener(actionEvent -> {
             tableLabel.setText("All tasks:");
             showTasksOnShelf(allTasks);
-            refreshButton.setEnabled(true);
         });
 
         completeTasksButton.addActionListener(actionEvent -> {
             tableLabel.setText("Complete Tasks:");
             showTasksOnShelf(completeTasks);
-            refreshButton.setEnabled(true);
         });
 
         incompleteTasksButton.addActionListener(actionEvent -> {
             tableLabel.setText("Incomplete Tasks:");
             showTasksOnShelf(incompleteTasks);
-            refreshButton.setEnabled(true);
+        });
+
+        addTaskButton.addActionListener(actionEvent -> {
+            Task task = requests.getTask(4);
+            System.out.println(requests.addTask(task));
         });
 
         aboutMenuItem.addActionListener(actionEvent -> {
 
         });
 
-        openServerConnectionMenuItem.addActionListener(actionEvent -> {
+        newServerConnectionMenuItem.addActionListener(actionEvent -> {
             new ServerConnectGUI(client); // will open a new ClientGUI for the new connection
         });
 
@@ -162,9 +169,11 @@ public class ClientGUI extends JFrame{
             tableData[i][0] = task.getTaskName();
             tableData[i][1] = task.getDescription();
             tableData[i][2] = task.getDateDue().toString();
+
             if (task.getComplete()) {
                 tableData[i][3] = "Yes";
-            } else {
+            }
+            else {
                 tableData[i][3] = "No";
             }
         }

@@ -13,6 +13,7 @@ import java.util.List;
 public class ServerRequests {
 
     private static final String TEST_CONNECTION_QUERY = "/test_connection";
+    private static final String REQUEST_NONCE = "/request_nonce";
     private static final String GET_ALL_TASKS_QUERY = "/get_all_tasks";
     private static final String GET_COMPLETE_TASKS_QUERY = "/get_complete_tasks";
     private static final String GET_INCOMPLETE_TASKS_QUERY = "/get_incomplete_tasks";
@@ -29,6 +30,11 @@ public class ServerRequests {
 
     private static final int TIMEOUT = 15000; // milliseconds until timeout
     private String serverURL;
+    private ClientSideAuthentication auth;
+
+    ServerRequests(){
+        auth = new ClientSideAuthentication();
+    }
 
     public void setServerURL(String url) {
         // make sure the prefix is "http://"
@@ -147,10 +153,11 @@ public class ServerRequests {
 
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~REQUEST METHODS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
 
-    private JSONObject getRequest(String queryString){
-        if (serverURL != null) {
+    // get a one-time value to be hashed w/ the password hash for authenticating POST requests
+    private String requestNonce(){
+        if (serverURL != null){
             try {
-                URL requestURL = new URL(serverURL + queryString);
+                URL requestURL = new URL(serverURL + REQUEST_NONCE);
                 HttpURLConnection connection = (HttpURLConnection) requestURL.openConnection();
 
                 // setup connection
@@ -166,8 +173,38 @@ public class ServerRequests {
         return null;
     }
 
-    private JSONObject postRequest(String updateString, String requestBody){
+    private JSONObject getRequest(String queryString){
         if (serverURL != null) {
+            try {
+                URL requestURL = new URL(serverURL + queryString);
+                HttpURLConnection connection = (HttpURLConnection) requestURL.openConnection();
+
+                // setup connection
+                connection.setReadTimeout(TIMEOUT);
+                connection.setRequestMethod("GET");
+                connection.connect();
+
+                String response = readInputStreamFromHTTPConnection(connection);
+
+                // parse response
+                return new JSONObject(response);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    private JSONObject postRequest(String updateString, String requestBody){
+        // have the user input a password if none has been set this session
+        if (!auth.passwordIsSet()){
+
+        }
+
+        String nonce = requestNonce();
+        String authToken = auth.getAuthToken(nonce);
+
+        if (serverURL != null && nonce != null && authToken != null) {
             try {
                 URL updateURL = new URL(serverURL + updateString);
                 HttpURLConnection connection = (HttpURLConnection) updateURL.openConnection();
@@ -175,14 +212,21 @@ public class ServerRequests {
                 // setup connection
                 connection.setReadTimeout(TIMEOUT);
                 connection.setRequestMethod("POST");
+                connection.setDoOutput(true);
                 connection.connect();
+
+                // make payload from authToken and requestBody
+                String payload = authToken + "\n" + requestBody;
 
                 // send request body to the server
                 OutputStream out = connection.getOutputStream();
-                out.write(requestBody.getBytes());
+                out.write(payload.getBytes());
 
                 out.close();
-                return readInputStreamFromHTTPConnection(connection);
+                String response = readInputStreamFromHTTPConnection(connection);
+
+                // parse response
+                return new JSONObject(response);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -192,7 +236,7 @@ public class ServerRequests {
 
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~HELPER METHODS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
 
-    private JSONObject readInputStreamFromHTTPConnection(HttpURLConnection connection) throws IOException {
+    private String readInputStreamFromHTTPConnection(HttpURLConnection connection) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
         StringBuilder responseBuilder = new StringBuilder();
 
@@ -201,13 +245,9 @@ public class ServerRequests {
         while ((line = reader.readLine()) != null){
             responseBuilder.append(line);
         }
-        String response = responseBuilder.toString();
-
-        // parse response
-        JSONObject json = new JSONObject(response);
-
+        reader.close();
         connection.disconnect();
-        return json;
+        return responseBuilder.toString();
     }
 
     private List<Task> convertJSONResponseToTaskList(JSONObject jsonResponse){
