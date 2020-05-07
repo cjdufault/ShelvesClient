@@ -117,4 +117,8 @@ public class Task {
 
         return json;
     }
+
+    public String toString(){
+        return taskName;
+    }
 }

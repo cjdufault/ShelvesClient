@@ -9,6 +9,7 @@ public class ClientGUI extends JFrame{
 
     private final Client client;
     private final ServerRequests requests;
+    private final ClientSideAuthentication auth;
     private List<Task> allTasks;
     private List<Task> completeTasks;
     private List<Task> incompleteTasks;
@@ -33,6 +34,7 @@ public class ClientGUI extends JFrame{
     ClientGUI(Client client, ServerRequests requests, int screenWidth, int screenHeight){
         this.client = client;
         this.requests = requests;
+        auth = requests.getAuth();
 
         // determine the size of the window
         double scalingFactor = 0.75;
@@ -129,8 +131,14 @@ public class ClientGUI extends JFrame{
         });
 
         addTaskButton.addActionListener(actionEvent -> {
-            Task task = requests.getTask(4);
-            System.out.println(requests.addTask(task));
+            if (auth.passwordIsSet()){
+                AddTaskForm addTaskForm = new AddTaskForm(requests);
+
+            }
+            else {
+                JOptionPane.showMessageDialog(
+                        null, "Not authenticated.\nUse Menu -> Login as Admin to authenticate.");
+            }
         });
 
         aboutMenuItem.addActionListener(actionEvent -> {
@@ -138,7 +146,7 @@ public class ClientGUI extends JFrame{
         });
 
         authenticateMenuItem.addActionListener(actionEvent -> {
-            new PasswordInput(requests.getAuth(), requests);
+            new PasswordInput(requests);
         });
 
         newServerConnectionMenuItem.addActionListener(actionEvent -> {

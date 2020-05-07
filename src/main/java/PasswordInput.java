@@ -10,9 +10,9 @@ public class PasswordInput extends JFrame{
     private JButton cancelButton;
     private JLabel statusLabel;
 
-    PasswordInput(ClientSideAuthentication auth, ServerRequests requests){
-        this.auth = auth;
+    PasswordInput(ServerRequests requests){
         this.requests = requests;
+        auth = requests.getAuth();
 
         setContentPane(mainPanel);
         setTitle("Input Password");

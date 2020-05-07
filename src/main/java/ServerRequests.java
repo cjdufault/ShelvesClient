@@ -49,6 +49,7 @@ public class ServerRequests {
             serverURL = url;
         }
     }
+
     public String getServerURL(){
         return serverURL;
     }
@@ -205,38 +206,36 @@ public class ServerRequests {
 
     private JSONObject postRequest(String updateString, String requestBody){
         // have the user input a password if none has been set this session
-        if (!auth.passwordIsSet()){
-            new PasswordInput(auth, this);
-        }
+        if (auth.passwordIsSet()) {
+            String nonce = requestNonce();
+            String authToken = auth.getAuthToken(nonce);
 
-        String nonce = requestNonce();
-        String authToken = auth.getAuthToken(nonce);
+            if (serverURL != null && nonce != null && authToken != null) {
+                try {
+                    URL updateURL = new URL(serverURL + updateString);
+                    HttpURLConnection connection = (HttpURLConnection) updateURL.openConnection();
 
-        if (serverURL != null && nonce != null && authToken != null) {
-            try {
-                URL updateURL = new URL(serverURL + updateString);
-                HttpURLConnection connection = (HttpURLConnection) updateURL.openConnection();
+                    // setup connection
+                    connection.setReadTimeout(TIMEOUT);
+                    connection.setRequestMethod("POST");
+                    connection.setDoOutput(true);
+                    connection.connect();
 
-                // setup connection
-                connection.setReadTimeout(TIMEOUT);
-                connection.setRequestMethod("POST");
-                connection.setDoOutput(true);
-                connection.connect();
+                    // make payload from authToken and requestBody
+                    String payload = authToken + "\n" + requestBody;
 
-                // make payload from authToken and requestBody
-                String payload = authToken + "\n" + requestBody;
+                    // send request body to the server
+                    OutputStream out = connection.getOutputStream();
+                    out.write(payload.getBytes());
 
-                // send request body to the server
-                OutputStream out = connection.getOutputStream();
-                out.write(payload.getBytes());
+                    out.close();
+                    String response = readInputStreamFromHTTPConnection(connection);
 
-                out.close();
-                String response = readInputStreamFromHTTPConnection(connection);
-
-                // parse response
-                return new JSONObject(response);
-            } catch (IOException e) {
-                e.printStackTrace();
+                    // parse response
+                    return new JSONObject(response);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return null;
