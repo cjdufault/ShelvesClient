@@ -136,7 +136,7 @@ public class ClientGUI extends JFrame{
             }
             else {
                 JOptionPane.showMessageDialog(
-                        null, "Not authenticated.\nUse Menu -> Login as Admin to authenticate.");
+                        null, "Not authenticated.\nUse \"Menu\" → \"Login as Admin\" to authenticate.");
             }
         });
 

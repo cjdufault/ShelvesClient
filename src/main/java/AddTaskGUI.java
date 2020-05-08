@@ -69,9 +69,14 @@ public class AddTaskGUI extends JFrame {
     private void addActionListeners(){
         addRequirementButton.addActionListener(e -> {
             String requirement = reqTextField.getText();
-            reqsList.add(requirement);
-            reqsListModel.addElement(requirement);
-            reqTextField.setText("");
+            if (requirement.contains("*")){
+                JOptionPane.showMessageDialog(null, "Requirements cannot contain the character \"*\"");
+            }
+            else {
+                reqsList.add(requirement);
+                reqsListModel.addElement(requirement);
+                reqTextField.setText("");
+            }
         });
         reqTextField.addActionListener(e -> addRequirementButton.doClick());
 
@@ -104,13 +109,31 @@ public class AddTaskGUI extends JFrame {
         String desc = descTextArea.getText();
         Date dateDue = dateDueModel.getDate();
 
+        // validate input
+        if (taskName.isBlank()){
+            JOptionPane.showMessageDialog(null, "Task Name field is empty");
+            return;
+        }
+        if (desc.isBlank()){
+            JOptionPane.showMessageDialog(null, "Description field is empty");
+            return;
+        }
+        if (reqsList.size() == 0){
+            JOptionPane.showMessageDialog(null, "Add at least one Requirement");
+            return;
+        }
+
         List<String> dependenciesList = new ArrayList<>();
         for (Task task : dependencies){
             dependenciesList.add(Integer.toString(task.getID()));
         }
 
         Task newTask = new Task(taskName, desc, reqsList, dateDue, false, dependenciesList, new ArrayList<>());
-        requests.addTask(newTask);
+        boolean success = requests.addTask(newTask);
+
+        if (!success){
+            JOptionPane.showMessageDialog(null, "Failed to create task.");
+        }
         dispose();
     }
 }
