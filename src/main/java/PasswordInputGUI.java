@@ -1,6 +1,6 @@
 import javax.swing.*;
 
-public class PasswordInput extends JFrame{
+public class PasswordInputGUI extends JFrame{
     private final ClientSideAuthentication auth;
     private final ServerRequests requests;
 
@@ -10,7 +10,7 @@ public class PasswordInput extends JFrame{
     private JButton cancelButton;
     private JLabel statusLabel;
 
-    PasswordInput(ServerRequests requests){
+    PasswordInputGUI(ServerRequests requests){
         this.requests = requests;
         auth = requests.getAuth();
 

@@ -22,4 +22,8 @@ public class Client {
     public void openTaskDetailsGUI(Task task, ServerRequests requests){
         new TaskDetailsGUI(task, requests, screenWidth, screenHeight);
     }
+
+    public void openAddTaskForm(ServerRequests requests){
+        new AddTaskGUI(requests, screenWidth, screenHeight);
+    }
 }

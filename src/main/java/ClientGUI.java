@@ -132,8 +132,7 @@ public class ClientGUI extends JFrame{
 
         addTaskButton.addActionListener(actionEvent -> {
             if (auth.passwordIsSet()){
-                AddTaskForm addTaskForm = new AddTaskForm(requests);
-
+                client.openAddTaskForm(requests);
             }
             else {
                 JOptionPane.showMessageDialog(
@@ -146,7 +145,7 @@ public class ClientGUI extends JFrame{
         });
 
         authenticateMenuItem.addActionListener(actionEvent -> {
-            new PasswordInput(requests);
+            new PasswordInputGUI(requests);
         });
 
         newServerConnectionMenuItem.addActionListener(actionEvent -> {
