@@ -19,11 +19,11 @@ public class Client {
         new ClientGUI(this, requests, screenWidth, screenHeight);
     }
 
-    public void openTaskDetailsGUI(Task task, ServerRequests requests){
-        new TaskDetailsGUI(task, requests, screenWidth, screenHeight);
+    public void openTaskDetailsGUI(Task task, ServerRequests requests, ClientGUI parentGUI){
+        new TaskDetailsGUI(task, requests, parentGUI, screenWidth, screenHeight);
     }
 
-    public void openAddTaskForm(ServerRequests requests){
-        new AddTaskGUI(requests, screenWidth, screenHeight);
+    public void openAddTaskForm(ServerRequests requests, ClientGUI parentGUI){
+        new AddTaskGUI(requests, parentGUI, screenWidth, screenHeight);
     }
 }

@@ -9,6 +9,7 @@ public class ClientGUI extends JFrame{
 
     private final Client client;
     private final ServerRequests requests;
+    private final ClientGUI thisGUI = this;
     private final ClientSideAuthentication auth;
     private List<Task> allTasks;
     private List<Task> completeTasks;
@@ -132,21 +133,19 @@ public class ClientGUI extends JFrame{
 
         addTaskButton.addActionListener(actionEvent -> {
             if (auth.passwordIsSet()){
-                client.openAddTaskForm(requests);
+                client.openAddTaskForm(requests, this);
             }
             else {
-                JOptionPane.showMessageDialog(
-                        null, "Not authenticated.\nUse \"Menu\" → \"Login as Admin\" to authenticate.");
+                showNotAuthenticatedMessage();
             }
         });
 
+        // TODO: add an about page
         aboutMenuItem.addActionListener(actionEvent -> {
 
         });
 
-        authenticateMenuItem.addActionListener(actionEvent -> {
-            new PasswordInputGUI(requests);
-        });
+        authenticateMenuItem.addActionListener(actionEvent -> new PasswordInputGUI(requests));
 
         newServerConnectionMenuItem.addActionListener(actionEvent -> {
             new ServerConnectGUI(client); // will open a new ClientGUI for the new connection
@@ -158,13 +157,13 @@ public class ClientGUI extends JFrame{
         shelf.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                Point point = e.getPoint(); // location of click
-                if (e.getClickCount() == 2) { // only do if double clicked
-                    int selectedRow = shelf.rowAtPoint(point);
-                    if (selectedRow >= 0) {
-                        client.openTaskDetailsGUI(currentTasksList.get(selectedRow), requests);
-                    }
+            Point point = e.getPoint(); // location of click
+            if (e.getClickCount() == 2) { // only do if double clicked
+                int selectedRow = shelf.rowAtPoint(point);
+                if (selectedRow >= 0) {
+                    client.openTaskDetailsGUI(currentTasksList.get(selectedRow), requests, thisGUI);
                 }
+            }
             }
         });
     }
@@ -205,5 +204,16 @@ public class ClientGUI extends JFrame{
         allTasks = requests.getAllTasks();
         completeTasks = requests.getCompleteTasks();
         incompleteTasks = requests.getIncompleteTasks();
+    }
+
+    public void updateAndReset(){
+        updateTaskLists();
+        showTasksOnShelf(incompleteTasks);
+        tableLabel.setText("Incomplete Tasks");
+    }
+
+    public void showNotAuthenticatedMessage(){
+        JOptionPane.showMessageDialog(
+                null, "Not authenticated.\nUse \"Menu\" → \"Login as Admin\" to authenticate.");
     }
 }

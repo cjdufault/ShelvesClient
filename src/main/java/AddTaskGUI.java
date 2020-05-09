@@ -30,10 +30,13 @@ public class AddTaskGUI extends JFrame {
     private final List<Task> dependencies = new ArrayList<>();
 
     private final ServerRequests requests;
+    private final ClientGUI parentGUI;
     private final List<String> reqsList;
 
-    AddTaskGUI(ServerRequests requests, int screenWidth, int screenHeight){
+    // a form to create tasks based on user input and submit the task to the server
+    AddTaskGUI(ServerRequests requests, ClientGUI parentGUI, int screenWidth, int screenHeight){
         this.requests = requests;
+        this.parentGUI = parentGUI;
         reqsList = new ArrayList<>();
 
         reqsJList.setModel(reqsListModel);
@@ -69,7 +72,7 @@ public class AddTaskGUI extends JFrame {
     private void addActionListeners(){
         addRequirementButton.addActionListener(e -> {
             String requirement = reqTextField.getText();
-            if (requirement.contains("*")){
+            if (requirement.contains("*")){ // DB uses * to separate list items in a string
                 JOptionPane.showMessageDialog(null, "Requirements cannot contain the character \"*\"");
             }
             else {
@@ -134,6 +137,7 @@ public class AddTaskGUI extends JFrame {
         if (!success){
             JOptionPane.showMessageDialog(null, "Failed to create task.");
         }
+        parentGUI.updateAndReset();
         dispose();
     }
 }
