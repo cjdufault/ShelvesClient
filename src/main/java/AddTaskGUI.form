@@ -79,7 +79,9 @@
                 <children>
                   <component id="ab240" class="javax.swing.JTextArea" binding="descTextArea">
                     <constraints/>
-                    <properties/>
+                    <properties>
+                      <lineWrap value="true"/>
+                    </properties>
                   </component>
                 </children>
               </scrollpane>
