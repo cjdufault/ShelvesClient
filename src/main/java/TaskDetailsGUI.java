@@ -141,11 +141,13 @@ public class TaskDetailsGUI extends JFrame{
                         claimTextField.setText(claimedByEmail);
                     }
                     else {
-                        JOptionPane.showMessageDialog(null, "Updating email failed");
+                        JOptionPane.showMessageDialog(null, "Updating email failed",
+                                "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 }
                 else {
-                    JOptionPane.showMessageDialog(null, "Invalid email address");
+                    JOptionPane.showMessageDialog(null, "Invalid email address",
+                            "Warning", JOptionPane.WARNING_MESSAGE);
                 }
             }
             else if (claimButton.getText().equals("Clear")) {
@@ -188,10 +190,12 @@ public class TaskDetailsGUI extends JFrame{
                     if (success) {
                         task = requests.getTask(task.getID());
                         setupDetailsComponents();
-                        JOptionPane.showMessageDialog(null, "Task completed successfully");
+                        JOptionPane.showMessageDialog(null, "Task completed successfully",
+                                "Success!", JOptionPane.INFORMATION_MESSAGE);
                         parentGUI.updateAndReset();
                     } else {
-                        JOptionPane.showMessageDialog(null, "Failed to complete task");
+                        JOptionPane.showMessageDialog(null, "Failed to complete task",
+                                "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }
@@ -200,7 +204,8 @@ public class TaskDetailsGUI extends JFrame{
                 for (Task incompleteTask : incompleteDependencies){
                     messageBuilder.append(String.format("\n - %s", incompleteTask.getTaskName()));
                 }
-                JOptionPane.showMessageDialog(null, messageBuilder.toString());
+                JOptionPane.showMessageDialog(null, messageBuilder.toString(),
+                        "Warning", JOptionPane.WARNING_MESSAGE);
             }
         }
         else {
@@ -213,12 +218,14 @@ public class TaskDetailsGUI extends JFrame{
             if (showConfirmationDialog("Are you sure you want to delete this task?") == JOptionPane.YES_OPTION){
                 boolean success = requests.removeTask(task.getID());
                 if (success){
-                    JOptionPane.showMessageDialog(null, "Task deleted successfully");
+                    JOptionPane.showMessageDialog(null, "Task deleted successfully",
+                            "Success!", JOptionPane.INFORMATION_MESSAGE);
                     parentGUI.updateAndReset();
                     dispose();
                 }
                 else{
-                    JOptionPane.showMessageDialog(null, "Failed to delete task");
+                    JOptionPane.showMessageDialog(null, "Failed to delete task",
+                            "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         }

@@ -3,10 +3,10 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.*;
 import java.util.List;
 
 public class ClientGUI extends JFrame{
-
     private final Client client;
     private final ServerRequests requests;
     private final ClientGUI thisGUI = this;
@@ -140,9 +140,8 @@ public class ClientGUI extends JFrame{
             }
         });
 
-        // TODO: add an about page
         aboutMenuItem.addActionListener(actionEvent -> {
-
+            showAbout();
         });
 
         authenticateMenuItem.addActionListener(actionEvent -> new PasswordInputGUI(requests));
@@ -214,6 +213,28 @@ public class ClientGUI extends JFrame{
 
     public void showNotAuthenticatedMessage(){
         JOptionPane.showMessageDialog(
-                null, "Not authenticated.\nUse \"Menu\" → \"Login as Admin\" to authenticate.");
+                null, "Not authenticated.\nUse \"Menu\" → \"Login as Admin\" to authenticate.",
+                "Not Authenticated", JOptionPane.WARNING_MESSAGE);
+    }
+
+    private void showAbout(){
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader("about.txt"));
+            StringBuilder messageBuilder = new StringBuilder();
+
+            String line = reader.readLine();
+            while(line != null){
+                messageBuilder.append(line).append("\n");
+                line = reader.readLine();
+            }
+
+            JOptionPane.showMessageDialog(null, messageBuilder.toString(), "About", JOptionPane.INFORMATION_MESSAGE);
+        }
+        catch (FileNotFoundException e){
+            JOptionPane.showMessageDialog(null, "About message not found");
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
     }
 }

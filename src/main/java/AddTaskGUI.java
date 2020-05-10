@@ -73,7 +73,8 @@ public class AddTaskGUI extends JFrame {
         addRequirementButton.addActionListener(e -> {
             String requirement = reqTextField.getText();
             if (requirement.contains("*")){ // DB uses * to separate list items in a string
-                JOptionPane.showMessageDialog(null, "Requirements cannot contain the character \"*\"");
+                JOptionPane.showMessageDialog(null, "Requirements cannot contain the character \"*\"",
+                        "Warning", JOptionPane.WARNING_MESSAGE);
             }
             else {
                 reqsList.add(requirement);
@@ -114,15 +115,18 @@ public class AddTaskGUI extends JFrame {
 
         // validate input
         if (taskName.isBlank()){
-            JOptionPane.showMessageDialog(null, "Task Name field is empty");
+            JOptionPane.showMessageDialog(null, "Task Name field is empty",
+                    "Warning", JOptionPane.WARNING_MESSAGE);
             return;
         }
         if (desc.isBlank()){
-            JOptionPane.showMessageDialog(null, "Description field is empty");
+            JOptionPane.showMessageDialog(null, "Description field is empty",
+                    "Warning", JOptionPane.WARNING_MESSAGE);
             return;
         }
         if (reqsList.size() == 0){
-            JOptionPane.showMessageDialog(null, "Add at least one Requirement");
+            JOptionPane.showMessageDialog(null, "Add at least one Requirement",
+                    "Warning", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -135,7 +139,8 @@ public class AddTaskGUI extends JFrame {
         boolean success = requests.addTask(newTask);
 
         if (!success){
-            JOptionPane.showMessageDialog(null, "Failed to create task.");
+            JOptionPane.showMessageDialog(null, "Failed to create task.",
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
         parentGUI.updateAndReset();
         dispose();
