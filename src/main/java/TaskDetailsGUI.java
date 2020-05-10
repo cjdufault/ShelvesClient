@@ -109,9 +109,7 @@ public class TaskDetailsGUI extends JFrame{
         dependentsList.setModel(dependentsListModel);
 
         setupClaimedByEmail();
-        if (task.getComplete()){
-            completeTaskButton.setEnabled(false);
-        }
+        completeTaskButton.setEnabled(!task.getComplete());
     }
 
     private void setupClaimedByEmail(){
@@ -193,7 +191,8 @@ public class TaskDetailsGUI extends JFrame{
                         JOptionPane.showMessageDialog(null, "Task completed successfully",
                                 "Success!", JOptionPane.INFORMATION_MESSAGE);
                         parentGUI.updateAndReset();
-                    } else {
+                    }
+                    else {
                         JOptionPane.showMessageDialog(null, "Failed to complete task",
                                 "Error", JOptionPane.ERROR_MESSAGE);
                     }
@@ -223,7 +222,7 @@ public class TaskDetailsGUI extends JFrame{
                     parentGUI.updateAndReset();
                     dispose();
                 }
-                else{
+                else {
                     JOptionPane.showMessageDialog(null, "Failed to delete task",
                             "Error", JOptionPane.ERROR_MESSAGE);
                 }

@@ -1,5 +1,5 @@
 Shelves
 ---------------
-A project management system for small, loosely-organized projects
+A client/server project management system for small, loosely-organized projects
 
 Created by Connor Dufault in 2020

@@ -171,7 +171,7 @@ public class ClientGUI extends JFrame{
         currentTasksList = tasks;
 
         String[] tableColumnNames = {"Task Name", "Description", "Date Due", "Complete?"};
-        String[][] tableData = new String[tasks.size()][4];
+        String[][] tableData = new String[tasks.size()][tableColumnNames.length];
 
         // make a 2D array that represents each task and the attributes of that task that will be displayed on the table
         for (int i = 0; i < tasks.size(); i++) {
