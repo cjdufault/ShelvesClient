@@ -131,7 +131,7 @@ public class TaskDetailsGUI extends JFrame{
                 String claimedByEmail = claimTextField.getText().strip();
 
                 // validate email address
-                if (claimedByEmail.matches("[\\S]+@\\w+(\\.\\w+)+")){
+                if (claimedByEmail.matches("\\S+@\\w+(\\.\\w+)+")){
                     boolean success = requests.updateClaim(task.getID(), claimedByEmail);
                     if (success) {
                         claimTextField.setEditable(false);
